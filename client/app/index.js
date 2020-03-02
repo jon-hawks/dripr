@@ -1,8 +1,6 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
     FlatList,
-    List,
-    ListItem,
     Platform,
     SafeAreaView,
     ScrollView,
@@ -16,24 +14,7 @@ import Meteor, { createContainer } from 'react-native-meteor';
 
 import {
     Colors,
-    DebugInstructions,
-    Header,
-    LearnMoreLinks,
-    ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
-
-const list = [
-    {
-        name: 'Amy Farha',
-        avatar_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/ladylexy/128.jpg',
-        subtitle: 'Vice President'
-    }, {
-        name: 'Chris Jackson',
-        avatar_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/adhamdannaway/128.jpg',
-        subtitle: 'Vice Chairman'
-    },
-];
-
 
 class App extends Component {
     constructor() {
@@ -48,50 +29,37 @@ class App extends Component {
         Meteor.connect('ws://' + ip + ':3000/websocket');
     }
 
-    handleAddStock() {
+    addStock() {
         const name = Math.floor(Math.random() * 10);
         Meteor.call('Stocks.addOne', { name }, (err, res) => {
             console.log('Stocks.addOne', err, res);
         });
     }
 
-    renderRow(stock) {
-      <ListItem
-        item={item}
-        index={index}
-        onPressItem={this._onPressItem}
-      />
-    };
-
     render() {
-        renderRow = ({item, index}) => (
-          <ListItem
-            item={item}
-            index={index}
-            onPressItem={this._onPressItem}
-          />
-        );
+        console.log(this.props.stocks);
         return (
             <>
-                <StatusBar barStyle="dark-content" />
-                <SafeAreaView>
-                    <ScrollView
-                        contentInsetAdjustmentBehavior="automatic"
-                        style={styles.scrollView}>
-                        <View style={styles.body}>
-                            <View style={styles.container}>
-                                <Text style={styles.welcome}>
-                                    Welcome to React Native + Meteor!
-                                </Text>
-                                <Text style={styles.instructions}>
-                                    Stock Count: {this.props.count}
-                                </Text>
-                                <TouchableOpacity style={styles.button} onPress={this.handleAddStock}>
-                                    <Text>Add Stock</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </ScrollView>
+                <StatusBar barStyle="light-content" />
+                <SafeAreaView style={styles.body}>
+                    <Text style={styles.text}>
+                        Welcome to React Native + Meteor!
+                    </Text>
+                    <Text style={styles.text}>
+                        Stock Count: {this.props.stocks.length}
+                    </Text>
+                    <TouchableOpacity style={styles.listItem} onPress={this.addStock}>
+                        <Text style={styles.text}>Add Stock</Text>
+                    </TouchableOpacity>
+                    <FlatList
+                        data={this.props.stocks}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity style={styles.listItem} onPress={this.viewStock}>
+                                <Text style={styles.text}>{item._id}</Text>
+                            </TouchableOpacity>
+                        )}
+                        keyExtractor={item => item._id}
+                    />
                 </SafeAreaView>
             </>
         );
@@ -99,51 +67,17 @@ class App extends Component {
 };
 
 const styles = StyleSheet.create({
-    scrollView: {
-        backgroundColor: Colors.lighter,
-    },
-    engine: {
-        position: 'absolute',
-        right: 0,
-    },
     body: {
-        backgroundColor: Colors.white,
+        backgroundColor: '#111',
     },
-    sectionContainer: {
-        marginTop: 32,
-        paddingHorizontal: 24,
-    },
-    sectionTitle: {
-        fontSize: 24,
-        fontWeight: '600',
-        color: Colors.black,
-    },
-    sectionDescription: {
-        marginTop: 8,
-        fontSize: 18,
-        fontWeight: '400',
-        color: Colors.dark,
-    },
-    highlight: {
-        fontWeight: '700',
-    },
-    footer: {
-        color: Colors.dark,
-        fontSize: 12,
-        fontWeight: '600',
-        padding: 4,
-        paddingRight: 12,
-        textAlign: 'right',
-    },
-    button: {
-        padding: 10,
-        backgroundColor: '#c5c5c5',
+    text: {
+        color: '#ccc',
     },
 });
 
 export default createContainer(() => {
     Meteor.subscribe('stocks');
     return {
-        count: Meteor.collection('stocks').find().length,
+        stocks: Meteor.collection('stocks').find(),
     };
 }, App);
